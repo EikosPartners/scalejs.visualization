@@ -31,7 +31,7 @@ define('treemap/bindings.js',[
                     width: toPercent(this.dx / parent.dx),
                     height: toPercent(this.dy / parent.dy),
                 }
-            }, ctx.$component.nodeBindings);
+            }, _.isFunction(ctx.$component.nodeBindings) ? ctx.$component.nodeBindings() : {});
         }
     };
 })
