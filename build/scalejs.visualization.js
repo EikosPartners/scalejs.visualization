@@ -61,7 +61,6 @@ define('treemap/treemap.js',[
     return {
         viewModel: function(params) {
             this.data = ko.observable();
-            this.nodeBindings = params.nodeBindings;
             this.nodeTemplate = params.nodeTemplate;
 
             ko.computed(function () {
