@@ -1,6 +1,6 @@
 {
   "name": "scalejs.visualization",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/EikosPartners/scalejs.visualization",
   "authors": [
       "Peter Fatyga <peter.fatyga@eikospartners.com"
@@ -14,11 +14,8 @@
   ],
   "license": "MIT",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
+    "*",
+    "!dist/*.js"
   ],
   "dependencies": {
     "scalejs": "lisovin/scalejs",
