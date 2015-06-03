@@ -3,7 +3,7 @@
 define('text!treemap/view.html',[],function () { return '<ul class="root">\n    <!-- ko template: {name: \'treemap_recurse\', data: data} -->\n    <!-- /ko -->\n</ul>\n';});
 
 
-define('text!treemap/template.html',[],function () { return '<script id="treemap_recurse">\n    <li class="node" data-class="treemap_node">\n        <div class="content">\n            <span data-bind="text: name"></span>\n        </div>\n        <!-- ko if: $data.children -->\n            <ul>\n                <!-- ko template: {name: \'treemap_recurse\', foreach: children} -->\n                <!-- /ko -->\n            </ul>\n        <!-- /ko -->\n    </li>\n</script>\n';});
+define('text!treemap/template.html',[],function () { return '<script id="treemap_recurse">\n    <li class="node" data-class="treemap_node">\n        <!-- ko if: $component.nodeTemplate -->\n            <!-- ko template: $component.nodeTemplate -->\n            <!-- /ko -->\n        <!-- /ko -->\n        <!-- ko if: $data.children -->\n            <ul>\n                <!-- ko template: {name: \'treemap_recurse\', foreach: children} -->\n                <!-- /ko -->\n            </ul>\n        <!-- /ko -->\n    </li>\n</script>\n';});
 
 define('treemap/bindings.js',[
     'underscore'
@@ -62,6 +62,8 @@ define('treemap/treemap.js',[
         viewModel: function(params) {
             this.data = ko.observable();
             this.nodeBindings = params.nodeBindings;
+            this.nodeTemplate = params.nodeTemplate;
+
             ko.computed(function () {
                 var data = ko.unwrap(params.data);
                 d3.layout.treemap()

@@ -23,7 +23,8 @@ define([
     return {
         viewModel: function(params) {
             this.data = ko.observable();
-            this.nodeBindings = params.nodeBindings;
+            this.nodeTemplate = params.nodeTemplate;
+
             ko.computed(function () {
                 var data = ko.unwrap(params.data);
                 d3.layout.treemap()
