@@ -1,0 +1,13 @@
+<script id="treemap_recurse">
+    <li class="node" data-class="treemap_node">
+        <div class="content">
+            <span data-bind="text: name"></span>
+        </div>
+        <!-- ko if: $data.children -->
+            <ul>
+                <!-- ko template: {name: 'treemap_recurse', foreach: children} -->
+                <!-- /ko -->
+            </ul>
+        <!-- /ko -->
+    </li>
+</script>
