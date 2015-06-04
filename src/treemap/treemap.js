@@ -2,6 +2,7 @@ define([
     'scalejs!core',
     'knockout',
     'd3',
+    'underscore',
     'text!./view.html',
     'text!./template.html',
     './bindings.js',
@@ -10,6 +11,7 @@ define([
     core,
     ko,
     d3,
+    _,
     view,
     template,
     bindings
@@ -30,7 +32,17 @@ define([
                 d3.layout.treemap()
                     .round(false)
                     .sticky(true)
-                    .value(function (d) {return d.size})
+                    .value(function (d) {
+                        if(params.value) {
+                            if(_.isFunction(params.value)) {
+                                return ko.unwrap(params.value(d));
+                            } else {
+                                return ko.unwrap(d[params.value]);
+                            }
+                        } else {
+                            return ko.unwrap(d.size);
+                        }
+                    })
                     .nodes(data);
                 this.data(data);
             }.bind(this));
