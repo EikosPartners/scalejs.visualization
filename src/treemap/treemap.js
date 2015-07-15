@@ -28,7 +28,8 @@ define([
             this.nodeTemplate = params.nodeTemplate;
 
             ko.computed(function () {
-                var data = ko.unwrap(params.data);
+                //deep clone params.data because array order was being modified
+                var data = ko.unwrap(JSON.parse(JSON.stringify(params.data)));
                 d3.layout.treemap()
                     .round(false)
                     .sticky(true)
