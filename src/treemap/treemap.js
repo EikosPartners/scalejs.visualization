@@ -17,10 +17,9 @@ define([
     bindings
 ) {
     'use strict';
-    var registerTemplates = core.mvvm.registerTemplates;
 
     core.mvvm.registerBindings(bindings);
-    registerTemplates(template);
+    core.mvvm.registerTemplates(template);
 
     //http://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-clone-an-object#answer-1042676
     function extend(from, to)
