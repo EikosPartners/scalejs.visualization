@@ -130,22 +130,34 @@ define('line/line.js',[
     'scalejs!core',
     'knockout',
     'd3',
+    'underscore',
     'scalejs.mvvm'
 ], function (
     core,
     ko,
-    d3
+    d3,
+    _
 ) {
     'use strict';
 
     //https://github.com/gustavnikolaj/knockout-d3-line-graph
     function getPaintingMethods(data, element, options) {
+
+      function mergeArrays(memo, element) {
+        if(element.constructor === Array) {
+          memo.concat(element);
+        } else {
+          memo.push(element);
+        }
+        return memo;
+      }
+
         var elementRect = element.getBoundingClientRect(),
             padding = options.padding(),
             width = elementRect.width - padding.left - padding.right,
             height = elementRect.height - padding.top - padding.bottom,
-            scalerX = options.xScale().domain(d3.extent(data, options.x)).range([0, width]),
-            scalerY = options.yScale().domain(d3.extent(data, options.y)).range([height, 0]);
+            scalerX = options.xScale().domain(d3.extent(_.reduce(data, mergeArrays, []), options.x)).range([0, width]),
+            scalerY = options.yScale().domain(d3.extent(_.reduce(data, mergeArrays, []), options.y)).range([height, 0]);
 
         return {
             line: d3.svg.line().interpolate('basis')
