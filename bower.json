@@ -3,7 +3,7 @@
     "version": "0.0.9",
     "homepage": "https://github.com/EikosPartners/scalejs.visualization",
     "authors": [
-        "Peter Fatyga <peter.fatyga@eikospartners.com"
+        "Peter Fatyga <peter.fatyga@eikospartners.com>"
     ],
     "description": "Visualization extension for scalable JavaScript application",
     "main": "dist/scalejs.visualization.js",
