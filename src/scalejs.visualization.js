@@ -9,5 +9,5 @@ define([
 ) {
     'use strict';
     ko.components.register('treemap', treemap);
-    ko.components.register('line', line);
+    //line creates ko.bindingHandlers.linegraph
 })
