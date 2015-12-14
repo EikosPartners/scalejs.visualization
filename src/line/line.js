@@ -112,27 +112,31 @@ define([
                   .scale(shapes.scaleX)
                   .orient('bottom');
 
-                options.xAxisOptions(xAxis, svg.select('g.x'));
+                options.xAxisOptions(xAxis);
 
-                svg.select('g.x')
+                var xAxisSvg = svg.select('g.x')
                   .interrupt()
                   .transition()
                   .ease('linear')
                   .duration(250)
                   .call(xAxis);
 
+                options.xAxisSvgOptions(xAxisSvg);
+
                 var yAxis = d3.svg.axis()
                   .scale(shapes.scaleY)
                   .orient('left');
 
-                options.yAxisOptions(yAxis, svg.select('g.y'));
+                options.yAxisOptions(yAxis);
 
-                svg.select('g.y')
+                var yAxisSvg = svg.select('g.y')
                   .interrupt()
                   .transition()
                   .ease('linear')
                   .duration(250)
                   .call(yAxis);
+
+                options.yAxisSvgOptions(yAxisSvg);
             }
 
             svg.select('path.area')
@@ -159,8 +163,9 @@ define([
                    xScale: d3.scale.linear,
                    yScale: d3.scale.linear,
                    xAxisOptions: function (axis) { },
-                   yAxisOptions: function (axis) { }
-
+                   yAxisOptions: function (axis) { },
+                   xAxisSvgOptions: function (axis) { },
+                   yAxisSvgOptions: function (axis) { }
                  }
     };
 })
