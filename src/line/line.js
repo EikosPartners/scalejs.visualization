@@ -32,10 +32,10 @@ define([
             scalerY = options.yScale().domain(d3.extent(_.reduce(data, mergeArrays, []), options.y)).range([height, 0]);
 
         return {
-            line: d3.svg.line().interpolate('basis')
+            line: d3.svg.line().interpolate(options.interpolate)
                 .x(function (d, i) { return scalerX(options.x(d, i)); })
                 .y(function (d) { return scalerY(options.y(d)); }),
-            area: d3.svg.area().interpolate('basis')
+            area: d3.svg.area().interpolate(options.interpolate)
                 .x(function (d, i) { return scalerX(options.x(d, i)); })
                 .y0(height)
                 .y1(function (d) { return scalerY(options.y(d)); }),
