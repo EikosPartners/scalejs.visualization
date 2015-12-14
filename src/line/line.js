@@ -81,19 +81,35 @@ define([
                   .scale(shapes.scaleX)
                   .orient('bottom');
 
-                svg.append('g')
+                var xAxisSvg = svg.append('g')
                   .attr('class', 'x axis')
                   .attr('transform', 'translate(' + padding.left + ',' + (elementRect.height - padding.bottom) + ')')
                   .call(xAxis);
+
+                if(options.xAxisAttributes && typeof options.xAxisAttributes === 'object') {
+                    for (var property in options.xAxisAttributes) {
+                        if (options.xAxisAttributes.hasOwnProperty(property)) {
+                            xAxisSvg.attr(property, options.xAxisAttributes[property]);
+                        }
+                    }
+                }
 
                 var yAxis = d3.svg.axis()
                   .scale(shapes.scaleY)
                   .orient('left');
 
-                svg.append('g')
+                var yAxisSvg = svg.append('g')
                   .attr('class', 'y axis')
                   .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
                   .call(yAxis);
+
+                  if(options.yAxisAttributes && typeof options.yAxisAttributes === 'object') {
+                      for (var property in options.yAxisAttributes) {
+                          if (options.yAxisAttributes.hasOwnProperty(property)) {
+                              yAxisSvg.attr(property, options.yAxisAttributes[property]);
+                          }
+                      }
+                  }
             }
         },
         update: function (element, valueAccessor, allBindings) {
