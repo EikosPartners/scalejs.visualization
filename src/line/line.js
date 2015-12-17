@@ -15,21 +15,24 @@ define([
     //https://github.com/gustavnikolaj/knockout-d3-line-graph
     function getPaintingMethods(data, element, options) {
 
-      function mergeArrays(memo, element) {
-        if(element.constructor === Array) {
-          memo.concat(element);
-        } else {
-          memo.push(element);
+        var yDomain = function (data, yAccessor) {
+            if(yAccessor.constructor === Array) {
+                return d3.extent(_.chain(yAccessor).map(function (prop) {
+                    return _.map(data, prop);
+                }).reduce(function (memo, value) {
+                    return memo.concat(value);
+                }, []).value());
+            } else {
+                return d3.extent(data, yAccessor);
+            }
         }
-        return memo;
-      }
 
         var elementRect = element.getBoundingClientRect(),
             padding = options.padding(),
             width = elementRect.width - padding.left - padding.right,
             height = elementRect.height - padding.top - padding.bottom,
-            scalerX = options.xScale().domain(d3.extent(_.reduce(data, mergeArrays, []), options.x)).range([0, width]),
-            scalerY = options.yScale().domain(d3.extent(_.reduce(data, mergeArrays, []), options.y)).range([height, 0]);
+            scalerX = options.xScale().domain(d3.extent(data, options.x)).range([0, width]),
+            scalerY = options.yScale().domain(yDomain(data, options.y)).range([height, 0]);
 
         return {
             line: d3.svg.line().interpolate(options.interpolate)
@@ -53,7 +56,7 @@ define([
 
             var bindingContext = ko.utils.unwrapObservable(valueAccessor());
             var elementRect = element.getBoundingClientRect();
-            var data = bindingContext.value ? bindingContext.value() : bindingContext;
+            var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var padding = options.padding();
 
             var shapes = getPaintingMethods(data, element, options);
@@ -73,8 +76,20 @@ define([
               .attr('height', elementRect.height - padding.top - padding.bottom)
               .attr('fill', 'none');
 
-            plot.append('path').attr('class', 'area').attr('d', shapes.area(data));
-            plot.append('path').attr('class', 'path').attr('d', shapes.line(data));
+            if(options.y.constructor === Array) {
+                options.y.forEach(function (prop) {
+                    var propAccessor = function (d) {
+                        return d[prop];
+                    }
+
+                    shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}));
+                    plot.append('path').attr('class', 'area ' + prop).attr('d', shapes.area(data));
+                    plot.append('path').attr('class', 'path ' + prop).attr('d', shapes.line(data));
+                });
+            } else {
+                plot.append('path').attr('class', 'area').attr('d', shapes.area(data));
+                plot.append('path').attr('class', 'path').attr('d', shapes.line(data));
+            }
 
             if (options.showAxes) {
                 var xAxis = d3.svg.axis()
@@ -102,7 +117,7 @@ define([
             ko.utils.extend(options, ko.bindingHandlers.linegraph.options);
             ko.utils.extend(options, allBindings.get('linegraph'));
             var bindingContext = ko.utils.unwrapObservable(valueAccessor());
-            var data = bindingContext.value ? bindingContext.value() : bindingContext;
+            var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var shapes = getPaintingMethods(data, element, options);
 
             var svg = d3.select(element).select('svg');
@@ -139,33 +154,57 @@ define([
                 options.yAxisSvgOptions(yAxisSvg);
             }
 
-            svg.select('path.area')
-               .interrupt()
-               .transition()
-               .ease('linear')
-               .duration(250)
-               .attr('d', shapes.area(data));
+            if(options.y.constructor === Array) {
+                options.y.forEach(function (prop) {
+                    var propAccessor = function (d) {
+                        return d[prop];
+                    }
 
-            svg.select('path.path')
-               .interrupt()
-               .transition()
-               .ease('linear')
-               .duration(250)
-               .attr('d', shapes.line(data));
+                    shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}));
+
+                    svg.select('path.area.' + prop)
+                        .interrupt()
+                        .transition()
+                        .ease('linear')
+                        .duration(250)
+                        .attr('d', shapes.area(data));
+
+                    svg.select('path.path.' + prop)
+                        .interrupt()
+                        .transition()
+                        .ease('linear')
+                        .duration(250)
+                        .attr('d', shapes.line(data));
+                });
+            } else {
+                svg.select('path.area')
+                    .interrupt()
+                    .transition()
+                    .ease('linear')
+                    .duration(250)
+                    .attr('d', shapes.area(data));
+
+                svg.select('path.path')
+                    .interrupt()
+                    .transition()
+                    .ease('linear')
+                    .duration(250)
+                    .attr('d', shapes.line(data));
+            }
         },
         options: {
-                   showAxes: false,
-                   padding: function () {
-                       return this.showAxes ? { top: 15, right: 20, left: 40, bottom: 25 } : { top: 0, right: 0, left: 0, bottom: 0 };
-                   },
-                   x: function (d, i) { return i; },
-                   y: function (d) { return d; },
-                   xScale: d3.scale.linear,
-                   yScale: d3.scale.linear,
-                   xAxisOptions: function (axis) { },
-                   yAxisOptions: function (axis) { },
-                   xAxisSvgOptions: function (axis) { },
-                   yAxisSvgOptions: function (axis) { }
-                 }
+           showAxes: false,
+           padding: function () {
+               return this.showAxes ? { top: 15, right: 20, left: 40, bottom: 25 } : { top: 0, right: 0, left: 0, bottom: 0 };
+           },
+           x: function (d, i) { return i; },
+           y: function (d) { return d; },
+           xScale: d3.scale.linear,
+           yScale: d3.scale.linear,
+           xAxisOptions: function (axis) { },
+           yAxisOptions: function (axis) { },
+           xAxisSvgOptions: function (axis) { },
+           yAxisSvgOptions: function (axis) { }
+       }
     };
 })
