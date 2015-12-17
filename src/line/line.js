@@ -111,6 +111,40 @@ define([
                   .call(yAxis);
 
             }
+
+            var focus = svg.append("g")
+                .attr("class", "focus")
+                .style("display", "none");
+
+            focus.append("circle")
+                .attr("r", 4.5);
+
+            focus.append("text")
+                .attr("x", 9)
+                .attr("dy", ".35em");
+
+            svg.append("rect")
+                .attr("class", "overlay")
+                .attr("width", elementRect.width)
+                .attr("height", elementRect.height)
+                .on("mouseover", function() { focus.style("display", null); })
+                .on("mouseout", function() { focus.style("display", "none"); })
+                .on("mousemove", mousemove);
+
+            function mousemove() {
+                debugger;
+                data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+                shapes = getPaintingMethods(data, element, options);
+                var bisectDate = d3.bisector(function(d) { return d.ValueDate; }).left;
+                var x0 = shapes.scaleX.invert(d3.mouse(this)[0]);
+                var i = bisectDate(data, x0, 1);
+                var d0 = data[i - 1];
+                var d1 = data[i];
+                var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+                focus.attr("transform", "translate(" + shapes.scaleX(d.ValueDate) + "," + shapes.scaleY(d.Max) + ")");
+                focus.select("text").text(d.Max);
+            }
+
         },
         update: function (element, valueAccessor, allBindings) {
             var options = {};
