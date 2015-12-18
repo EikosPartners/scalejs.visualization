@@ -126,25 +126,25 @@ define([
 
             }
 
-            var focus = plot.append("g")
-                .attr("class", "focus")
-                .style("display", "none");
+            var focus = plot.append('g')
+                .attr('class', 'focus')
+                .style('display', 'none');
 
-            focus.append("circle")
-                .attr("r", 4.5);
+            focus.append('circle')
+                .attr('r', 4.5);
 
-            focus.append("text")
-                .attr("x", 9)
-                .attr("dy", ".35em");
+            focus.append('text')
+                .attr('x', 9)
+                .attr('dy', '.35em');
 
-            svg.append("rect")
-                .attr("class", "overlay")
+            svg.append('rect')
+                .attr('class', 'overlay')
                 .attr('width', elementRect.width - padding.left - padding.right + 1)
                 .attr('height', elementRect.height - padding.top - padding.bottom + 1)
                 .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')')
-                .on("mouseover", function() { focus.style("display", null); })
-                .on("mouseout", function() { focus.style("display", "none"); })
-                .on("mousemove", mousemove);
+                .on('mouseover', function() { focus.style('display', null); })
+                .on('mouseout', function() { focus.style('display', 'none'); })
+                .on('mousemove', mousemove);
 
             function mousemove() {
                 data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
@@ -159,8 +159,8 @@ define([
                 var d0 = data[i - 1];
                 var d1 = data[i];
                 var d = x0 - d0.ValueDate > d1.ValueDate - x0 ? d1 : d0;
-                focus.attr("transform", "translate(" + scales.scaleX(d.ValueDate) + "," + scales.scaleY(d.Value) + ")");
-                focus.select("text").text(d.ValueDate + ': ' + d.Value);
+                focus.attr('transform', 'translate(' + scales.scaleX(d.ValueDate) + ',' + scales.scaleY(d.Value) + ')');
+                focus.select('text').text(d.ValueDate + ': ' + d.Value);
             }
 
         },
