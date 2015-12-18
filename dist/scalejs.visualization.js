@@ -242,20 +242,27 @@ define('line/line.js',[
                   .scale(scales().scaleX)
                   .orient('bottom');
 
-                svg.append('g')
+                options.xAxisOptions(xAxis);
+
+                var xAxisSvg = svg.append('g')
                   .attr('class', 'x axis')
                   .attr('transform', 'translate(' + padding.left + ',' + (elementRect.height - padding.bottom) + ')')
                   .call(xAxis);
+
+                options.xAxisSvgOptions(xAxisSvg);
 
                 var yAxis = d3.svg.axis()
                   .scale(scales().scaleY)
                   .orient('left');
 
-                svg.append('g')
+                options.yAxisOptions(yAxis);
+
+                var yAxisSvg = svg.append('g')
                   .attr('class', 'y axis')
                   .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
                   .call(yAxis);
 
+                options.yAxisSvgOptions(yAxisSvg);
             }
 
             var focus = plot.append('g')
@@ -320,13 +327,17 @@ define('line/line.js',[
                     options.y.forEach(function (prop) {
                         var circle = focus.select('g.' + prop);
                         circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
-                        circle.select('text').text(options.x(d) + ': ' + d[prop]);
+                        var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
+                        var yText = yAxis.tickFormat() ? yAxis.tickFormat()(d[prop]) : d[prop];
+                        circle.select('text').text(prop + ': (' + xText + ', ' + yText + ')');
                     });
                 } else {
                     var y = scales().scaleY(options.y(d));
                     var circle = focus.select('g.circlecontainer');
                     circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
-                    circle.select('text').text(options.x(d) + ': ' + options.y(d));
+                    var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
+                    var yText = yAxis.tickFormat() ? yAxis.tickFormat()(options.y(d)) : options.y(d);
+                    circle.select('text').text('(' + xText + ', ' + yText + ')');
                 }
 
 
