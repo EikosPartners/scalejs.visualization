@@ -71,18 +71,23 @@ define([
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var padding = options.padding();
 
-            var scales = getScales(data, element, options);
-            var shapes = getPaintingMethods(data, element, options, scales);
+            var scales = ko.computed(function () {
+                var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+                return getScales(data, element, options)
+            });
+            var shapes = getPaintingMethods(data, element, options, scales());
 
             var svg = d3.select(element).append('svg');
 
             svg.attr('width', elementRect.width)
                .attr('height', elementRect.height);
 
+            var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
+            var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
             var plot = svg.append('g')
               .attr('class', 'plot')
-              .attr('width', elementRect.width - padding.left - padding.right + 1)
-              .attr('height', elementRect.height - padding.top - padding.bottom + 1)
+              .attr('width', PLOT_WIDTH)
+              .attr('height', PLOT_HEIGHT)
               .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')');
 
             plot.append('rect').attr('class', 'bg').attr('width', elementRect.width - padding.left - padding.right)
@@ -95,8 +100,7 @@ define([
                         return d[prop];
                     }
 
-                    var scales = getScales(data, element, options);
-                    shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}), scales);
+                    shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}), scales());
                     plot.append('path').attr('class', 'area ' + prop).attr('d', shapes.area(data));
                     plot.append('path').attr('class', 'path ' + prop).attr('d', shapes.line(data));
                 });
@@ -107,7 +111,7 @@ define([
 
             if (options.showAxes) {
                 var xAxis = d3.svg.axis()
-                  .scale(scales.scaleX)
+                  .scale(scales().scaleX)
                   .orient('bottom');
 
                 svg.append('g')
@@ -116,7 +120,7 @@ define([
                   .call(xAxis);
 
                 var yAxis = d3.svg.axis()
-                  .scale(scales.scaleY)
+                  .scale(scales().scaleY)
                   .orient('left');
 
                 svg.append('g')
@@ -130,37 +134,75 @@ define([
                 .attr('class', 'focus')
                 .style('display', 'none');
 
-            focus.append('circle')
-                .attr('r', 4.5);
+            focus.append('line').attr('y1', 0).attr('y2', PLOT_HEIGHT);
 
-            focus.append('text')
-                .attr('x', 9)
-                .attr('dy', '.35em');
+            if(options.y.constructor === Array) {
+                options.y.forEach(function (prop) {
+                    var container = focus.append('g')
+                        .attr('class', prop);
+
+                    container.append('circle')
+                        .attr('r', 4.5);
+
+                    container.append('text')
+                        .attr('x', 9)
+                        .attr('dy', '.35em');
+                });
+            } else {
+                var container = focus.append('g')
+                    .attr('class', 'circlecontainer');
+
+                container.append('circle')
+                    .attr('r', 4.5);
+
+                container.append('text')
+                    .attr('x', 9)
+                    .attr('dy', '.35em');
+            }
+
 
             svg.append('rect')
                 .attr('class', 'overlay')
-                .attr('width', elementRect.width - padding.left - padding.right + 1)
-                .attr('height', elementRect.height - padding.top - padding.bottom + 1)
+                .attr('width', PLOT_WIDTH)
+                .attr('height', PLOT_HEIGHT)
                 .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')')
                 .on('mouseover', function() { focus.style('display', null); })
                 .on('mouseout', function() { focus.style('display', 'none'); })
                 .on('mousemove', mousemove);
 
+
+            var sortedData = ko.computed(function () {
+                return _.sortBy(bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext, options.x);
+            });
+
+            var bisectX = d3.bisector(options.x).left;
+
             function mousemove() {
-                data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
-                scales = getScales(data, element, options);
-                shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: function (d) { return d.Value; }}), scales);
-                var bisectDate = d3.bisector(function(d) {
-                    return d.ValueDate;
-                }).left;
-                data = _.sortBy(data, 'ValueDate');
-                var x0 = scales.scaleX.invert(d3.mouse(this)[0]);
-                var i = bisectDate(data, x0, 1, data.length-1);
+                data = sortedData();
+                var x0 = scales().scaleX.invert(d3.mouse(this)[0]);
+                var i = bisectX(data, x0, 1, data.length-1);
                 var d0 = data[i - 1];
                 var d1 = data[i];
-                var d = x0 - d0.ValueDate > d1.ValueDate - x0 ? d1 : d0;
-                focus.attr('transform', 'translate(' + scales.scaleX(d.ValueDate) + ',' + scales.scaleY(d.Value) + ')');
-                focus.select('text').text(d.ValueDate + ': ' + d.Value);
+                var d = x0 - options.x(d0) > options.x(d1) - x0 ? d1 : d0;
+                var x = scales().scaleX(options.x(d));
+
+                focus.attr('transform', 'translate(' + x + ',' + 0 + ')');
+
+                if(options.y.constructor === Array) {
+                    options.y.forEach(function (prop) {
+                        var circle = focus.select('g.' + prop);
+                        circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
+                        circle.select('text').text(options.x(d) + ': ' + d[prop]);
+                    });
+                } else {
+                    var y = scales().scaleY(options.y(d));
+                    var circle = focus.select('g.circlecontainer');
+                    circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
+                    circle.select('text').text(options.x(d) + ': ' + options.y(d));
+                }
+
+
+
             }
 
         },
