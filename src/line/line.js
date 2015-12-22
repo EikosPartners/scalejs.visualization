@@ -138,8 +138,8 @@ define([
             }
 
             var focus = plot.append('g')
-                .attr('class', 'focus')
-                .style('display', 'none');
+                .attr('class', 'focus');
+                // .style('display', 'none');
 
             focus.append('line').attr('y1', 0).attr('y2', PLOT_HEIGHT);
 
@@ -168,53 +168,71 @@ define([
             }
 
 
-            svg.append('rect')
+            var rect = svg.append('rect')
                 .attr('class', 'overlay')
                 .attr('width', PLOT_WIDTH)
                 .attr('height', PLOT_HEIGHT)
-                .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')')
-                .on('mouseover', function() { focus.style('display', null); })
-                .on('mouseout', function() { focus.style('display', 'none'); })
-                .on('mousemove', mousemove);
+                .attr('overflow', 'scroll')
+                .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')');
 
+            d3.select('body').on('mousemove', move(d3.mouse));
+            d3.select('body').on('touchmove', move(function (c) {
+                return d3.touches(c).pop();
+            }));
 
-            var sortedData = ko.computed(function () {
-                return _.sortBy(bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext, options.x);
-            });
+            function move(moveType) {
+                var container = rect[0][0],
+                    sortedData = ko.computed(function () {
+                        return _.sortBy(bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext, options.x);
+                    }),
+                    bisectX = d3.bisector(options.x).left;
 
-            var bisectX = d3.bisector(options.x).left;
-
-            function mousemove() {
-                data = sortedData();
-                var x0 = scales().scaleX.invert(d3.mouse(this)[0]);
-                var i = bisectX(data, x0, 1, data.length-1);
-                var d0 = data[i - 1];
-                var d1 = data[i];
-                var d = x0 - options.x(d0) > options.x(d1) - x0 ? d1 : d0;
-                var x = scales().scaleX(options.x(d));
-
-                focus.attr('transform', 'translate(' + x + ',' + 0 + ')');
-
-                if(options.y.constructor === Array) {
-                    options.y.forEach(function (prop) {
-                        var circle = focus.select('g.' + prop);
-                        circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
-                        var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
-                        var yText = yAxis.tickFormat() ? yAxis.tickFormat()(d[prop]) : d[prop];
-                        circle.select('text').text(prop + ': (' + xText + ', ' + yText + ')');
-                    });
-                } else {
-                    var y = scales().scaleY(options.y(d));
-                    var circle = focus.select('g.circlecontainer');
-                    circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
-                    var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
-                    var yText = yAxis.tickFormat() ? yAxis.tickFormat()(options.y(d)) : options.y(d);
-                    circle.select('text').text('(' + xText + ', ' + yText + ')');
+                function coordWithinBounds(coords, element) {
+                    var x = coords[0];
+                    var y = coords[1];
+                    var width = parseInt(element.getAttribute('width'), 10);
+                    var height = parseInt(element.getAttribute('height'), 10)
+                    return x > 0 && x < width && y > 0 && y < height;
                 }
 
+                return function mousemove() {
+                    var coords = moveType(container);
+                    if (!coordWithinBounds(coords, container)) {
+                        return;
+                    }
+                    d3.event.preventDefault();
+                    data = sortedData();
+                    var x0 = scales().scaleX.invert(coords[0]);
+                    var i = bisectX(data, x0, 1, data.length-1);
+                    var d0 = data[i - 1];
+                    var d1 = data[i];
+                    var d = x0 - options.x(d0) > options.x(d1) - x0 ? d1 : d0;
+                    var x = scales().scaleX(options.x(d));
+
+                    focus.attr('transform', 'translate(' + x + ',' + 0 + ')');
+
+                    if(options.y.constructor === Array) {
+                        options.y.forEach(function (prop) {
+                            var circle = focus.select('g.' + prop);
+                            circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
+                            var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
+                            var yText = yAxis.tickFormat() ? yAxis.tickFormat()(d[prop]) : d[prop];
+                            circle.select('text').text(prop + ': (' + xText + ', ' + yText + ')');
+                        });
+                    } else {
+                        var y = scales().scaleY(options.y(d));
+                        var circle = focus.select('g.circlecontainer');
+                        circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
+                        var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
+                        var yText = yAxis.tickFormat() ? yAxis.tickFormat()(options.y(d)) : options.y(d);
+                        circle.select('text').text('(' + xText + ', ' + yText + ')');
+                    }
 
 
+
+                }
             }
+
 
         },
         update: function (element, valueAccessor, allBindings) {
