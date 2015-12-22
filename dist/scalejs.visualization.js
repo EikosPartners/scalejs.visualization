@@ -199,10 +199,13 @@ define('line/line.js',[
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var padding = options.padding();
 
-            var scales = ko.computed(function () {
-                var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
-                return getScales(data, element, options)
-            });
+            var scales = ko.observable(getScales(data, element, options));
+            if(ko.isObservable(bindingContext.value)) {
+                bindingContext.value.subscribe(function (data) {
+                    scales(getScales(data, element, options));
+                });
+            }
+
             var shapes = getPaintingMethods(data, element, options, scales());
 
             var svg = d3.select(element).append('svg');
@@ -213,14 +216,15 @@ define('line/line.js',[
             var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
             var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
             var plot = svg.append('g')
-              .attr('class', 'plot')
-              .attr('width', PLOT_WIDTH)
-              .attr('height', PLOT_HEIGHT)
-              .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')');
+                .attr('class', 'plot')
+                .attr('width', PLOT_WIDTH)
+                .attr('height', PLOT_HEIGHT)
+                .attr('transform', 'translate(' + (padding.left + 1) + ',' + (padding.top - 1) + ')');
 
-            plot.append('rect').attr('class', 'bg').attr('width', elementRect.width - padding.left - padding.right)
-              .attr('height', elementRect.height - padding.top - padding.bottom)
-              .attr('fill', 'none');
+            var bg = plot.append('rect').attr('class', 'bg')
+                .attr('width', elementRect.width - padding.left - padding.right)
+                .attr('height', elementRect.height - padding.top - padding.bottom)
+                .attr('fill', 'none');
 
             if(options.y.constructor === Array) {
                 options.y.forEach(function (prop) {
@@ -237,27 +241,32 @@ define('line/line.js',[
                 plot.append('path').attr('class', 'path').attr('d', shapes.line(data));
             }
 
+            var xAxis,
+                xAxisSvg,
+                yAxis,
+                yAxisSvg;
+
             if (options.showAxes) {
-                var xAxis = d3.svg.axis()
+                xAxis = d3.svg.axis()
                   .scale(scales().scaleX)
                   .orient('bottom');
 
                 options.xAxisOptions(xAxis);
 
-                var xAxisSvg = svg.append('g')
+                xAxisSvg = svg.append('g')
                   .attr('class', 'x axis')
                   .attr('transform', 'translate(' + padding.left + ',' + (elementRect.height - padding.bottom) + ')')
                   .call(xAxis);
 
                 options.xAxisSvgOptions(xAxisSvg);
 
-                var yAxis = d3.svg.axis()
+                yAxis = d3.svg.axis()
                   .scale(scales().scaleY)
                   .orient('left');
 
                 options.yAxisOptions(yAxis);
 
-                var yAxisSvg = svg.append('g')
+                yAxisSvg = svg.append('g')
                   .attr('class', 'y axis')
                   .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
                   .call(yAxis);
@@ -269,7 +278,7 @@ define('line/line.js',[
                 .attr('class', 'focus');
                 // .style('display', 'none');
 
-            focus.append('line').attr('y1', 0).attr('y2', PLOT_HEIGHT);
+            var line = focus.append('line').attr('y1', 0).attr('y2', PLOT_HEIGHT);
 
             if(options.y.constructor === Array) {
                 options.y.forEach(function (prop) {
@@ -307,6 +316,95 @@ define('line/line.js',[
             d3.select('body').on('touchmove', move(function (c) {
                 return d3.touches(c).pop();
             }));
+
+            d3.select(window).on('resize', _.throttle(resize, 100));
+
+            function resize() {
+                // update width
+                var elementRect = element.getBoundingClientRect();
+                var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
+                var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
+                scales(getScales(data, element, options));
+
+                svg.attr('width', elementRect.width)
+                   .attr('height', elementRect.height);
+
+                plot.attr('width', PLOT_WIDTH)
+                    .attr('height', PLOT_HEIGHT);
+
+                bg.attr('width', elementRect.width - padding.left - padding.right)
+                    .attr('height', elementRect.height - padding.top - padding.bottom);
+
+                line.attr('y2', PLOT_HEIGHT);
+
+                rect.attr('width', PLOT_WIDTH)
+                    .attr('height', PLOT_HEIGHT);
+
+                if (options.showAxes) {
+                    xAxis = d3.svg.axis()
+                      .scale(scales().scaleX)
+                      .orient('bottom');
+
+                    options.xAxisOptions(xAxis);
+
+                    xAxisSvg
+                      .attr('transform', 'translate(' + padding.left + ',' + (elementRect.height - padding.bottom) + ')')
+                      .call(xAxis);
+
+                    options.xAxisSvgOptions(xAxisSvg);
+
+                    yAxis = d3.svg.axis()
+                      .scale(scales().scaleY)
+                      .orient('left');
+
+                    options.yAxisOptions(yAxis);
+
+                    yAxisSvg
+                      .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+                      .call(yAxis);
+
+                    options.yAxisSvgOptions(yAxisSvg);
+                }
+
+                if(options.y.constructor === Array) {
+                    options.y.forEach(function (prop) {
+                        var propAccessor = function (d) {
+                            return d[prop];
+                        }
+
+                        var shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}), scales());
+
+                        svg.select('path.area.' + prop)
+                            .interrupt()
+                            .transition()
+                            .ease('linear')
+                            .duration(250)
+                            .attr('d', shapes.area(data));
+
+                        svg.select('path.path.' + prop)
+                            .interrupt()
+                            .transition()
+                            .ease('linear')
+                            .duration(250)
+                            .attr('d', shapes.line(data));
+                    });
+                } else {
+                    svg.select('path.area')
+                        .interrupt()
+                        .transition()
+                        .ease('linear')
+                        .duration(250)
+                        .attr('d', shapes.area(data));
+
+                    svg.select('path.path')
+                        .interrupt()
+                        .transition()
+                        .ease('linear')
+                        .duration(250)
+                        .attr('d', shapes.line(data));
+                }
+
+            }
 
             function move(moveType) {
                 var container = rect[0][0],
