@@ -293,6 +293,22 @@ define([
                     return x > 0 && x < width && y > 0 && y < height;
                 }
 
+                function renderCircle(circle, xValue, yValue, tooltipLabel, CONTAINER_WIDTH) {
+                    var x = scales().scaleX(xValue);
+                    var y = scales().scaleY(yValue);
+                    var xText = xAxis.tickFormat() ? xAxis.tickFormat()(xValue) : xValue;
+                    var yText = yAxis.tickFormat() ? yAxis.tickFormat()(yValue) : yValue;
+                    var text = circle.select('text');
+                    circle.attr('transform', 'translate(' + 0 + ',' + y + ')');
+                    text.text(tooltipLabel + '(' + xText + ', ' + yText + ')');
+                    var textWidth = text.node().getComputedTextLength();
+                    if(x + textWidth > CONTAINER_WIDTH) {
+                        text.attr('transform', 'translate(' + (-textWidth - (options.circleRadius * 2 * 2)) + ',' + 0 + ')');
+                    } else {
+                        text.attr('transform', null);
+                    }
+                }
+
                 return function mousemove() {
                     var CONTAINER_WIDTH = parseInt(container.getAttribute('width'), 10);
                     var coords = moveType(container);
@@ -306,43 +322,18 @@ define([
                     var d0 = data[i - 1];
                     var d1 = data[i];
                     var d = x0 - options.x(d0) > options.x(d1) - x0 ? d1 : d0;
-                    var x = scales().scaleX(options.x(d));
+                    var xValue = options.x(d);
+                    var x = scales().scaleX(xValue);
 
                     focus.attr('transform', 'translate(' + x + ',' + 0 + ')');
 
                     if(options.y.constructor === Array) {
                         options.y.forEach(function (prop) {
-                            var circle = focus.select('g.' + prop);
-                            circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
-                            var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
-                            var yText = yAxis.tickFormat() ? yAxis.tickFormat()(d[prop]) : d[prop];
-                            var text = circle.select('text');
-                            text.text(prop + ': (' + xText + ', ' + yText + ')');
-                            var textWidth = text.node().getComputedTextLength();
-                            if(x + textWidth > CONTAINER_WIDTH) {
-                                text.attr('transform', 'translate(' + (-textWidth - (options.circleRadius * 2 * 2)) + ',' + 0 + ')');
-                            } else {
-                                text.attr('transform', null);
-                            }
+                            renderCircle(focus.select('g.' + prop), xValue, d[prop], prop + ' : ', CONTAINER_WIDTH);
                         });
                     } else {
-                        var y = scales().scaleY(options.y(d));
-                        var circle = focus.select('g.circlecontainer');
-                        circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
-                        var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
-                        var yText = yAxis.tickFormat() ? yAxis.tickFormat()(options.y(d)) : options.y(d);
-                        var text = circle.select('text');
-                        text.text('(' + xText + ', ' + yText + ')');
-                        var textWidth = text.node().getComputedTextLength();
-                        if(x + textWidth > CONTAINER_WIDTH) {
-                            text.attr('transform', 'translate(' + (-textWidth - (options.circleRadius * 2 * 2)) + ',' + 0 + ')');
-                        } else {
-                            text.attr('transform', null);
-                        }
+                        renderCircle(focus.select('g.circlecontainer'), xValue, options.y(d), '', CONTAINER_WIDTH);
                     }
-
-
-
                 }
             }
 
@@ -444,5 +435,6 @@ define([
            yAxisOptions: function (axis) { },
            xAxisSvgOptions: function (axis) { },
            yAxisSvgOptions: function (axis) { }
-       };
+       }
+   };
 })
