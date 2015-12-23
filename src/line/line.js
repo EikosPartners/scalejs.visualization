@@ -158,7 +158,7 @@ define([
                         .attr('class', prop);
 
                     container.append('circle')
-                        .attr('r', 4.5);
+                        .attr('r', options.circleRadius);
 
                     container.append('text')
                         .attr('x', 9)
@@ -169,7 +169,7 @@ define([
                     .attr('class', 'circlecontainer');
 
                 container.append('circle')
-                    .attr('r', 4.5);
+                    .attr('r', options.circleRadius);
 
                 container.append('text')
                     .attr('x', 9)
@@ -294,6 +294,7 @@ define([
                 }
 
                 return function mousemove() {
+                    var CONTAINER_WIDTH = parseInt(container.getAttribute('width'), 10);
                     var coords = moveType(container);
                     if (!coordWithinBounds(coords, container)) {
                         return;
@@ -315,7 +316,14 @@ define([
                             circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(d[prop]) + ')');
                             var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
                             var yText = yAxis.tickFormat() ? yAxis.tickFormat()(d[prop]) : d[prop];
-                            circle.select('text').text(prop + ': (' + xText + ', ' + yText + ')');
+                            var text = circle.select('text');
+                            text.text(prop + ': (' + xText + ', ' + yText + ')');
+                            var textWidth = text.node().getComputedTextLength();
+                            if(x + textWidth > CONTAINER_WIDTH) {
+                                text.attr('transform', 'translate(' + (-textWidth - (options.circleRadius * 2 * 2)) + ',' + 0 + ')');
+                            } else {
+                                text.attr('transform', null);
+                            }
                         });
                     } else {
                         var y = scales().scaleY(options.y(d));
@@ -323,7 +331,14 @@ define([
                         circle.attr('transform', 'translate(' + 0 + ',' + scales().scaleY(options.y(d)) + ')');
                         var xText = xAxis.tickFormat() ? xAxis.tickFormat()(options.x(d)) : options.x(d);
                         var yText = yAxis.tickFormat() ? yAxis.tickFormat()(options.y(d)) : options.y(d);
-                        circle.select('text').text('(' + xText + ', ' + yText + ')');
+                        var text = circle.select('text');
+                        text.text('(' + xText + ', ' + yText + ')');
+                        var textWidth = text.node().getComputedTextLength();
+                        if(x + textWidth > CONTAINER_WIDTH) {
+                            text.attr('transform', 'translate(' + (-textWidth - (options.circleRadius * 2 * 2)) + ',' + 0 + ')');
+                        } else {
+                            text.attr('transform', null);
+                        }
                     }
 
 
@@ -424,10 +439,10 @@ define([
            y: function (d) { return d; },
            xScale: d3.scale.linear,
            yScale: d3.scale.linear,
+           circleRadius: 4.5,
            xAxisOptions: function (axis) { },
            yAxisOptions: function (axis) { },
            xAxisSvgOptions: function (axis) { },
            yAxisSvgOptions: function (axis) { }
-       }
-    };
+       };
 })
