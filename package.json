@@ -1,6 +1,6 @@
 {
   "name": "scalejs.visualization",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A generator for modular scalejs applications",
   "repository": {
     "private": true

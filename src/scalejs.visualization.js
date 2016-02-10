@@ -1,11 +1,13 @@
 define([
     'knockout',
     './treemap/treemap.js',
-    './line/line.js'
+    './line/line.js',
+    './donut/donut.js'
 ], function (
     ko,
     treemap,
-    line
+    line,
+    donut
 ) {
     'use strict';
     ko.components.register('treemap', treemap);
