@@ -62,6 +62,51 @@ define([
                 .attr('text-anchor', 'middle')
                 .text(function (d) { return options.x(d.data); });
 
+
+                d3.select(window).on('resize', _.throttle(resize, 100));
+
+                function resize() {
+                    var elementRect = element.getBoundingClientRect();
+                    var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+                    var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
+                    var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
+                    var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
+                    debugger;
+                    var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
+
+                    var arc = d3.svg.arc()
+                        .outerRadius(options.outerRadius(PLOT_RADIUS))
+                        .innerRadius(options.innerRadius(PLOT_RADIUS));
+
+                    var svg = d3.select(element).select('svg')
+                        .attr('width', PLOT_WIDTH)
+                        .attr('height', PLOT_HEIGHT)
+                        .select('g')
+                        .attr('transform', 'translate(' + PLOT_WIDTH / 2 + ',' + PLOT_HEIGHT / 2 + ')');
+
+                    // svg.select('text')
+                    //     .attr('dy', '.35em')
+                    //     .attr('text-anchor', 'middle')
+                    //     .text(centerText);
+
+                    svg.selectAll('.arc').remove();
+
+                    var g = svg.selectAll('.arc')
+                        .data(pie(data))
+                        .enter().append('g')
+                        .attr('class', 'arc');
+
+                    g.append('path')
+                        .attr('d', arc)
+                        .attr('class', function (d) { return options.x(d.data); });
+
+                    g.append('text')
+                        .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
+                        .attr('dy', '.30em')
+                        .attr('text-anchor', 'middle')
+                        .text(function (d) { return options.x(d.data); });
+                }
+
         },
         update: function (element, valueAccessor, allBindings) {
             var options = {};
@@ -90,6 +135,8 @@ define([
             var pie = d3.layout.pie()
                 .sort(null)
                 .value(options.y);
+
+            svg.selectAll('.arc').remove();
 
             var g = svg.selectAll('.arc')
                 .data(pie(data))
