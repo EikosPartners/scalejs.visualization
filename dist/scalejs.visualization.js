@@ -631,15 +631,15 @@ define('donut/donut.js',[
                 .attr('text-anchor', 'middle')
                 .text(function (d) { return options.x(d.data); });
 
-
-                d3.select(window).on('resize', _.throttle(resize, 100));
+                //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
+                d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
 
                 function resize() {
                     var elementRect = element.getBoundingClientRect();
                     var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
                     var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
                     var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
-                    var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;                    
+                    var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
                     var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
 
                     var arc = d3.svg.arc()
