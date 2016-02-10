@@ -71,7 +71,6 @@ define([
                     var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
                     var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
                     var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
-                    debugger;
                     var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
 
                     var arc = d3.svg.arc()
