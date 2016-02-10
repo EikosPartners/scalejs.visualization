@@ -21,30 +21,31 @@ define([
             var bindingContext = ko.utils.unwrapObservable(valueAccessor());
             var elementRect = element.getBoundingClientRect();
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+            var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
             var padding = options.padding();
-
-            var svg = d3.select(element).append('svg');
-
-            svg.attr('width', elementRect.width)
-                .attr('height', elementRect.height);
 
             var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
             var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
             var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
 
             var arc = d3.svg.arc()
-                .outerRadius(PLOT_RADIUS - 10)
-                .innerRadius(PLOT_RADIUS - 70);
+                .outerRadius(options.outerRadius(PLOT_RADIUS))
+                .innerRadius(options.innerRadius(PLOT_RADIUS));
 
             var pie = d3.layout.pie()
                 .sort(null)
                 .value(options.y);
 
-            svg
+            var svg = d3.select(element).append('svg')
                 .attr('width', PLOT_WIDTH)
                 .attr('height', PLOT_HEIGHT)
                 .append('g')
                 .attr('transform', 'translate(' + PLOT_WIDTH / 2 + ',' + PLOT_HEIGHT / 2 + ')');
+
+            svg.append('text')
+                .attr('dy', '.35em')
+                .attr('text-anchor', 'middle')
+                .text(centerText);
 
             var g = svg.selectAll('.arc')
                 .data(pie(data))
@@ -53,12 +54,13 @@ define([
 
             g.append('path')
                 .attr('d', arc)
-                .attr('class', options.x);
+                .attr('class', function (d) { return options.x(d.data); });
 
             g.append('text')
                 .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
                 .attr('dy', '.35em')
-                .text(options.x);
+                .attr('text-anchor', 'middle')
+                .text(function (d) { return options.x(d.data); });
 
         },
         update: function (element, valueAccessor, allBindings) {
@@ -68,17 +70,22 @@ define([
             var bindingContext = ko.utils.unwrapObservable(valueAccessor());
             var elementRect = element.getBoundingClientRect();
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+            var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
             var padding = options.padding();
 
             var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
             var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
             var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
 
-            var svg = d3.select(element).select('svg');
+            var svg = d3.select(element).select('svg').select('g');
+
+            svg.select('text')
+                .attr('text-anchor', 'middle')
+                .text(centerText);
 
             var arc = d3.svg.arc()
-                .outerRadius(PLOT_RADIUS - 10)
-                .innerRadius(PLOT_RADIUS - 70);
+                .outerRadius(options.outerRadius(PLOT_RADIUS))
+                .innerRadius(options.innerRadius(PLOT_RADIUS));
 
             var pie = d3.layout.pie()
                 .sort(null)
@@ -91,12 +98,13 @@ define([
 
             g.append('path')
                 .attr('d', arc)
-                .attr('class', options.x);
+                .attr('class', function (d) { return options.x(d.data); });
 
             g.append('text')
                 .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
-                .attr('dy', '.35em')
-                .text(options.x);
+                .attr('dy', '.30em')
+                .attr('text-anchor', 'middle')
+                .text(function (d) { return options.x(d.data); });
         },
         options: {
             x: function (d) {
@@ -104,6 +112,12 @@ define([
             },
             y: function (d) {
                 return d.y;
+            },
+            innerRadius: function (plotRadius) {
+                return plotRadius - 70;
+            },
+            outerRadius: function (plotRadius) {
+                return plotRadius - 10;
             },
             padding: function () {
                 return this.showAxes ? { top: 15, right: 20, left: 40, bottom: 25 } : { top: 0, right: 0, left: 0, bottom: 0 };
