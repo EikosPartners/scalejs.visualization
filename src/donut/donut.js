@@ -62,8 +62,8 @@ define([
                 .attr('text-anchor', 'middle')
                 .text(function (d) { return options.x(d.data); });
 
-
-                d3.select(window).on('resize', _.throttle(resize, 100));
+                //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
+                d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
 
                 function resize() {
                     var elementRect = element.getBoundingClientRect();
