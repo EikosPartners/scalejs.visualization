@@ -103,9 +103,15 @@ define([
                     .enter().append('g')
                     .attr('class', 'arc');
 
-                g.append('path')
+                var path = g.append('path')
                     .attr('d', arc)
                     .attr('class', function (d) { return options.x(d.data); });
+
+                if(clickHandler && _.isFunction(clickHandler)) {
+                    path.on('click', function(d,i){
+                        clickHandler.call(d.data, d, i);
+                    });
+                }
 
                 g.append('text')
                     .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
