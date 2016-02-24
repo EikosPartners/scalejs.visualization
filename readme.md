@@ -78,3 +78,22 @@ linegraph: {
     }
 }
 ```
+based on http://bl.ocks.org/mbostock/3887193
+```
+donut: {
+    value: this.data, //array of objects optionally in an observable
+    centerText: _.reduce(this.data(), function(memo, d){ return memo + d.Value; }, 0),
+    y: function (d) {
+        return Math.abs(d.Value);
+    },
+    x: function(d) {
+        return d.Tag;
+    },
+    innerRadius: function (plotRadius) {
+        return plotRadius - 70;
+    },
+    outerRadius: function (plotRadius) {
+        return plotRadius;
+    }
+}
+```
