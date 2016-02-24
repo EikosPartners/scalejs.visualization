@@ -591,6 +591,7 @@ define('donut/donut.js',[
             var elementRect = element.getBoundingClientRect();
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
+            var clickHandler = bindingContext.click;
             var padding = options.padding();
 
             var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
@@ -621,9 +622,16 @@ define('donut/donut.js',[
                 .enter().append('g')
                 .attr('class', 'arc');
 
-            g.append('path')
+            var path = g.append('path')
                 .attr('d', arc)
                 .attr('class', function (d) { return options.x(d.data); });
+
+
+            if(clickHandler && _.isFunction(clickHandler)) {
+                path.on('click', function(d,i){
+                    clickHandler.call(d.data, d, i);
+                });
+            }
 
             g.append('text')
                 .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
@@ -631,49 +639,55 @@ define('donut/donut.js',[
                 .attr('text-anchor', 'middle')
                 .text(function (d) { return options.x(d.data); });
 
-                //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
-                d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
+            //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
+            d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
 
-                function resize() {
-                    var elementRect = element.getBoundingClientRect();
-                    var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
-                    var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
-                    var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
-                    var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
-                    var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
+            function resize() {
+                var elementRect = element.getBoundingClientRect();
+                var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+                var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
+                var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
+                var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom + 1;
+                var PLOT_RADIUS = Math.min(PLOT_WIDTH, PLOT_HEIGHT) / 2;
 
-                    var arc = d3.svg.arc()
-                        .outerRadius(options.outerRadius(PLOT_RADIUS))
-                        .innerRadius(options.innerRadius(PLOT_RADIUS));
+                var arc = d3.svg.arc()
+                    .outerRadius(options.outerRadius(PLOT_RADIUS))
+                    .innerRadius(options.innerRadius(PLOT_RADIUS));
 
-                    var svg = d3.select(element).select('svg')
-                        .attr('width', PLOT_WIDTH)
-                        .attr('height', PLOT_HEIGHT)
-                        .select('g')
-                        .attr('transform', 'translate(' + PLOT_WIDTH / 2 + ',' + PLOT_HEIGHT / 2 + ')');
+                var svg = d3.select(element).select('svg')
+                    .attr('width', PLOT_WIDTH)
+                    .attr('height', PLOT_HEIGHT)
+                    .select('g')
+                    .attr('transform', 'translate(' + PLOT_WIDTH / 2 + ',' + PLOT_HEIGHT / 2 + ')');
 
-                    // svg.select('text')
-                    //     .attr('dy', '.35em')
-                    //     .attr('text-anchor', 'middle')
-                    //     .text(centerText);
+                // svg.select('text')
+                //     .attr('dy', '.35em')
+                //     .attr('text-anchor', 'middle')
+                //     .text(centerText);
 
-                    svg.selectAll('.arc').remove();
+                svg.selectAll('.arc').remove();
 
-                    var g = svg.selectAll('.arc')
-                        .data(pie(data))
-                        .enter().append('g')
-                        .attr('class', 'arc');
+                var g = svg.selectAll('.arc')
+                    .data(pie(data))
+                    .enter().append('g')
+                    .attr('class', 'arc');
 
-                    g.append('path')
-                        .attr('d', arc)
-                        .attr('class', function (d) { return options.x(d.data); });
+                var path = g.append('path')
+                    .attr('d', arc)
+                    .attr('class', function (d) { return options.x(d.data); });
 
-                    g.append('text')
-                        .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
-                        .attr('dy', '.30em')
-                        .attr('text-anchor', 'middle')
-                        .text(function (d) { return options.x(d.data); });
+                if(clickHandler && _.isFunction(clickHandler)) {
+                    path.on('click', function(d,i){
+                        clickHandler.call(d.data, d, i);
+                    });
                 }
+
+                g.append('text')
+                    .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
+                    .attr('dy', '.30em')
+                    .attr('text-anchor', 'middle')
+                    .text(function (d) { return options.x(d.data); });
+            }
 
         },
         update: function (element, valueAccessor, allBindings) {
@@ -684,6 +698,7 @@ define('donut/donut.js',[
             var elementRect = element.getBoundingClientRect();
             var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
             var centerText = ko.utils.unwrapObservable(bindingContext.centerText);
+            var clickHandler = bindingContext.click;
             var padding = options.padding();
 
             var PLOT_WIDTH = elementRect.width - padding.left - padding.right + 1;
@@ -711,9 +726,15 @@ define('donut/donut.js',[
                 .enter().append('g')
                 .attr('class', 'arc');
 
-            g.append('path')
+            var path = g.append('path')
                 .attr('d', arc)
                 .attr('class', function (d) { return options.x(d.data); });
+
+            if(clickHandler && _.isFunction(clickHandler)) {
+                path.on('click', function(d,i){
+                    clickHandler.call(d.data, d, i);
+                });
+            }
 
             g.append('text')
                 .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
