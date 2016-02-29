@@ -1,0 +1,22 @@
+{
+  "name": "test",
+  "version": "0.0.0",
+  "dependencies": {
+    "requirejs": "latest",
+    "almond": "latest",
+    "scalejs": "lisovin/scalejs",
+    "scalejs.metadataFactory": "EikosPartners/scalejs.metadataFactory#develop",
+    "scalejs.mvvm": "EikosPartners/scalejs.mvvm",
+    "scalejs.statechart-scion": "EikosPartners/scalejs.statechart-scion#^0.0.5",
+    "scalejs.reactive": "EikosPartners/scalejs.reactive",
+    "scalejs.visualization": "../../"
+  },
+  "resolutions": {
+    "knockout": "~3.3.0",
+    "scalejs.mvvm": "dev"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  }
+}

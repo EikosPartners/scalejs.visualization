@@ -1,15 +1,17 @@
 define([
     'knockout',
-    './treemap/treemap.js',
-    './line/line.js',
-    './donut/donut.js'
+    './treemap/treemap',
+    './line/line',
+    './donut/donut',
+    './barchart/barchart'
 ], function (
     ko,
     treemap,
     line,
-    donut
+    donut,
+    barchart
 ) {
     'use strict';
     ko.components.register('treemap', treemap);
     //line creates ko.bindingHandlers.linegraph
-})
+});

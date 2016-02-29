@@ -1,0 +1,63 @@
+.visualization {
+    position: relative;
+    width: 600px;
+    height: 600px;
+
+    //treemap
+    .node {
+        background-color: red;
+        border: solid black 1px;
+    }
+
+    //donut
+    svg > g > .arc {
+        &:nth-of-type(1) > path {
+            fill: #FFC000;  //blue
+        }
+
+        &:nth-of-type(2) > path {
+            fill: #0070C0;  //orange
+        }
+
+        &:nth-of-type(3) > path {
+            fill: #FF0000;  //red
+        }
+
+        &:nth-of-type(4) > path {
+            fill: #00B050;  //green
+        }
+
+        &:nth-of-type(5) > path {
+            fill: #7030A0;  //purple
+        }
+
+        &:nth-of-type(6) > path {
+            fill: #56B6C2;  //cyan
+        }
+    }
+}
+
+.barchart {
+
+
+    .bar-positive {
+      fill: steelblue;
+    }
+
+    .bar-negative {
+      fill: darkorange;
+    }
+
+    .axis text {
+      font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+
+}

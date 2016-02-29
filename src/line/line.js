@@ -24,7 +24,7 @@ define([
             } else {
                 return d3.extent(data, yAccessor);
             }
-        }
+        };
 
         var elementRect = element.getBoundingClientRect(),
             padding = options.padding(),
@@ -289,7 +289,7 @@ define([
                     var x = coords[0];
                     var y = coords[1];
                     var width = parseInt(element.getAttribute('width'), 10);
-                    var height = parseInt(element.getAttribute('height'), 10)
+                    var height = parseInt(element.getAttribute('height'), 10);
                     return x > 0 && x < width && y > 0 && y < height;
                 }
 
@@ -334,7 +334,7 @@ define([
                     } else {
                         renderCircle(focus.select('g.circlecontainer'), xValue, options.y(d), '', CONTAINER_WIDTH);
                     }
-                }
+                };
             }
 
 
@@ -386,7 +386,7 @@ define([
                 options.y.forEach(function (prop) {
                     var propAccessor = function (d) {
                         return d[prop];
-                    }
+                    };
 
                     var scales = getScales(data, element, options);
                     shapes = getPaintingMethods(data, element, _.extend(_.clone(options), {y: propAccessor}), scales);
@@ -437,4 +437,4 @@ define([
            yAxisSvgOptions: function (axis) { }
        }
    };
-})
+});
