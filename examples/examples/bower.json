@@ -9,7 +9,8 @@
     "scalejs.mvvm": "EikosPartners/scalejs.mvvm",
     "scalejs.statechart-scion": "EikosPartners/scalejs.statechart-scion#^0.0.5",
     "scalejs.reactive": "EikosPartners/scalejs.reactive",
-    "scalejs.visualization": "../../"
+    "scalejs.visualization": "EikosPartners/scalejs.visualization#barchart",
+    "scalejs.styles-less": "lisovin/scalejs.styles-less#dev"
   },
   "resolutions": {
     "knockout": "~3.3.0",
