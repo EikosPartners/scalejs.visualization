@@ -37,11 +37,15 @@ define([
                 .scale(x)
                 .orient('bottom');
 
+            options.xAxisOptions(xAxis);
+
             var yAxis = d3.svg.axis()
                 .scale(y)
                 .orient('left')
                 .tickSize(0)
                 .tickPadding(6);
+
+            options.yAxisOptions(yAxis);
 
             var svg = d3.select(element).append('svg')
                 .attr('width', PLOT_WIDTH + padding.left + padding.right)
@@ -65,16 +69,19 @@ define([
                 .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
                 .attr('height', y.rangeBand());
 
-            svg.append('g')
+            var xAxisSvg = svg.append('g')
                 .attr('class', 'x axis')
                 .attr('transform', 'translate(0,' + PLOT_HEIGHT + ')')
                 .call(xAxis);
 
-            svg.append('g')
+            options.xAxisSvgOptions(xAxisSvg);
+
+            var yAxisSvg = svg.append('g')
                 .attr('class', 'y axis')
                 .attr('transform', 'translate(' + x(0) + ',0)')
                 .call(yAxis);
 
+            options.yAxisSvgOptions(yAxisSvg);
 
             if(clickHandler && _.isFunction(clickHandler)) {
                 rect.on('click', function(d,i){
@@ -105,11 +112,15 @@ define([
                     .scale(x)
                     .orient('bottom');
 
+                options.xAxisOptions(xAxis);
+
                 var yAxis = d3.svg.axis()
                     .scale(y)
                     .orient('left')
                     .tickSize(0)
                     .tickPadding(6);
+
+                options.yAxisOptions(yAxis);
 
                 var svg = d3.select(element).select('svg')
                     .attr('width', PLOT_WIDTH + padding.left + padding.right)
@@ -130,15 +141,19 @@ define([
                     .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
                     .attr('height', y.rangeBand());
 
-                svg.select('g.x.axis')
+                var xAxisSvg = svg.select('g.x.axis')
                     .transition().duration(1000)
                     .attr('transform', 'translate(0,' + PLOT_HEIGHT + ')')
                     .call(xAxis);
 
-                svg.select('g.y.axis')
+                options.xAxisSvgOptions(xAxisSvg);
+
+                var yAxisSvg = svg.select('g.y.axis')
                     .transition().duration(1000)
                     .attr('transform', 'translate(' + x(0) + ',0)')
-                    .call(yAxis);                
+                    .call(yAxis);
+
+                options.yAxisSvgOptions(yAxisSvg);
             }
 
         },
@@ -166,11 +181,15 @@ define([
                 .scale(x)
                 .orient('bottom');
 
+            options.xAxisOptions(xAxis);
+
             var yAxis = d3.svg.axis()
                 .scale(y)
                 .orient('left')
                 .tickSize(0)
                 .tickPadding(6);
+
+            options.yAxisOptions(yAxis);
 
             var svg = d3.select(element).select('svg').select('g');
 
@@ -204,14 +223,18 @@ define([
                 .attr('width', 0)
                 .remove();
 
-            svg.select('g.x.axis')
+            var xAxisSvg = svg.select('g.x.axis')
                 .transition().duration(1000)
                 .call(xAxis);
 
-            svg.select('g.y.axis')
+            options.xAxisSvgOptions(xAxisSvg);
+
+            var yAxisSvg = svg.select('g.y.axis')
                 .transition().duration(1000)
                 .attr('transform', 'translate(' + x(0) + ',0)')
                 .call(yAxis);
+
+            options.yAxisSvgOptions(yAxisSvg);
 
         },
         options: {
@@ -223,7 +246,11 @@ define([
             },
             padding: function () {
                 return { top: 15, right: 20, left: 40, bottom: 25 };
-            }
+            },
+            xAxisOptions: function (axis) { },
+            yAxisOptions: function (axis) { },
+            xAxisSvgOptions: function (axis) { },
+            yAxisSvgOptions: function (axis) { }
         }
     };
 });
