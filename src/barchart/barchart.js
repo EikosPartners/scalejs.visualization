@@ -77,7 +77,7 @@ define([
 
             if(clickHandler && _.isFunction(clickHandler)) {
                 rect.on('click', function(d,i){
-                    clickHandler.call(d.data, d, i);
+                    clickHandler.call(d, d, i);
                 });
             }
 
