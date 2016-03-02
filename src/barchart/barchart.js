@@ -47,7 +47,9 @@ define([
                 .attr('width', PLOT_WIDTH + padding.left + padding.right)
                 .attr('height', PLOT_HEIGHT + padding.top + padding.bottom)
                 .append('g')
-                .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
+                .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+                .attr('width', PLOT_WIDTH)
+                .attr('height', PLOT_HEIGHT);
 
             x.domain(d3.extent(data, options.y)).nice();    //y traditionally has the value
             y.domain(data.map(options.x));  //x is the label
@@ -71,7 +73,6 @@ define([
             svg.append('g')
                 .attr('class', 'y axis')
                 .attr('transform', 'translate(' + x(0) + ',0)')
-                .attr('transition', '1s')
                 .call(yAxis);
 
 
@@ -79,6 +80,65 @@ define([
                 rect.on('click', function(d,i){
                     clickHandler.call(d, d, i);
                 });
+            }
+
+            //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
+            d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
+
+            function resize() {
+                var bindingContext = ko.utils.unwrapObservable(valueAccessor());
+                var elementRect = element.getBoundingClientRect();
+                var data = bindingContext.value ? ko.utils.unwrapObservable(bindingContext.value) : bindingContext;
+                var clickHandler = bindingContext.click;
+                var padding = options.padding();
+
+                var PLOT_WIDTH = elementRect.width - padding.left - padding.right;
+                var PLOT_HEIGHT = elementRect.height - padding.top - padding.bottom;
+
+                var x = d3.scale.linear()
+                    .range([0, PLOT_WIDTH]);
+
+                var y = d3.scale.ordinal()
+                    .rangeRoundBands([0, PLOT_HEIGHT], 0.1);
+
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom');
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left')
+                    .tickSize(0)
+                    .tickPadding(6);
+
+                var svg = d3.select(element).select('svg')
+                    .attr('width', PLOT_WIDTH + padding.left + padding.right)
+                    .attr('height', PLOT_HEIGHT + padding.top + padding.bottom)
+                    .select('g')
+                    .attr('width', PLOT_WIDTH)
+                    .attr('height', PLOT_HEIGHT);
+
+                x.domain(d3.extent(data, options.y)).nice();    //y traditionally has the value
+                y.domain(data.map(options.x));  //x is the label
+
+                var plot = svg.select('g.plot');
+
+                var rect = plot.selectAll('.bar').data(data).transition().duration(1000)
+                    .attr('class', function(d) { return 'bar bar-' + (options.y(d) < 0 ? 'negative' : 'positive'); })
+                    .attr('x', function(d) { return x(Math.min(0, options.y(d))); })
+                    .attr('y', function(d) { return y(options.x(d)); })
+                    .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
+                    .attr('height', y.rangeBand());
+
+                svg.select('g.x.axis')
+                    .transition().duration(1000)
+                    .attr('transform', 'translate(0,' + PLOT_HEIGHT + ')')
+                    .call(xAxis);
+
+                svg.select('g.y.axis')
+                    .transition().duration(1000)
+                    .attr('transform', 'translate(' + x(0) + ',0)')
+                    .call(yAxis);                
             }
 
         },
