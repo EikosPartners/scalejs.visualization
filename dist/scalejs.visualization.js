@@ -801,7 +801,7 @@ define('barchart/barchart',[
                 .scale(x)
                 .orient('bottom');
 
-            options.xAxisOptions(xAxis);
+            xAxis = options.xAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, xAxis);
 
             var yAxis = d3.svg.axis()
                 .scale(y)
@@ -809,7 +809,7 @@ define('barchart/barchart',[
                 .tickSize(0)
                 .tickPadding(6);
 
-            options.yAxisOptions(yAxis);
+            yAxis = options.yAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, yAxis);
 
             var svg = d3.select(element).append('svg')
                 .attr('width', PLOT_WIDTH + padding.left + padding.right)
@@ -819,7 +819,14 @@ define('barchart/barchart',[
                 .attr('width', PLOT_WIDTH)
                 .attr('height', PLOT_HEIGHT);
 
-            x.domain(d3.extent(data, options.y)).nice();    //y traditionally has the value
+            var yMinMax = d3.extent(data, options.y);
+            if(options.hasOwnProperty('yMin') && typeof options.yMin === 'number') {
+                yMinMax[0] = Math.min(yMinMax[0], options.yMin);
+            }
+            if(options.hasOwnProperty('yMax') && typeof options.yMax === 'number') {
+                yMinMax[1] = Math.max(yMinMax[1], options.yMax);
+            }
+            x.domain(yMinMax).nice();    //y traditionally has the value
             y.domain(data.map(options.x));  //x is the label
 
             var plot = svg.append('g').attr('class', 'plot');
@@ -876,7 +883,7 @@ define('barchart/barchart',[
                     .scale(x)
                     .orient('bottom');
 
-                options.xAxisOptions(xAxis);
+                xAxis = options.xAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, xAxis);
 
                 var yAxis = d3.svg.axis()
                     .scale(y)
@@ -884,7 +891,7 @@ define('barchart/barchart',[
                     .tickSize(0)
                     .tickPadding(6);
 
-                options.yAxisOptions(yAxis);
+                yAxis = options.yAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, yAxis);
 
                 var svg = d3.select(element).select('svg')
                     .attr('width', PLOT_WIDTH + padding.left + padding.right)
@@ -893,7 +900,14 @@ define('barchart/barchart',[
                     .attr('width', PLOT_WIDTH)
                     .attr('height', PLOT_HEIGHT);
 
-                x.domain(d3.extent(data, options.y)).nice();    //y traditionally has the value
+                var yMinMax = d3.extent(data, options.y);
+                if(options.hasOwnProperty('yMin') && typeof options.yMin === 'number') {
+                    yMinMax[0] = Math.min(yMinMax[0], options.yMin);
+                }
+                if(options.hasOwnProperty('yMax') && typeof options.yMax === 'number') {
+                    yMinMax[1] = Math.max(yMinMax[1], options.yMax);
+                }
+                x.domain(yMinMax).nice();    //y traditionally has the value
                 y.domain(data.map(options.x));  //x is the label
 
                 var plot = svg.select('g.plot');
@@ -945,7 +959,7 @@ define('barchart/barchart',[
                 .scale(x)
                 .orient('bottom');
 
-            options.xAxisOptions(xAxis);
+            xAxis = options.xAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, xAxis);
 
             var yAxis = d3.svg.axis()
                 .scale(y)
@@ -953,11 +967,18 @@ define('barchart/barchart',[
                 .tickSize(0)
                 .tickPadding(6);
 
-            options.yAxisOptions(yAxis);
+            yAxis = options.yAxisOptions.call({x: x, y: y, PLOT_WIDTH: PLOT_WIDTH, PLOT_HEIGHT: PLOT_HEIGHT, padding: padding}, yAxis);
 
             var svg = d3.select(element).select('svg').select('g');
 
-            x.domain(d3.extent(data, options.y)).nice();    //y traditionally has the value
+            var yMinMax = d3.extent(data, options.y);
+            if(options.hasOwnProperty('yMin') && typeof options.yMin === 'number') {
+                yMinMax[0] = Math.min(yMinMax[0], options.yMin);
+            }
+            if(options.hasOwnProperty('yMax') && typeof options.yMax === 'number') {
+                yMinMax[1] = Math.max(yMinMax[1], options.yMax);
+            }
+            x.domain(yMinMax).nice();    //y traditionally has the value
             y.domain(data.map(options.x));  //x is the label
 
             var plot = svg.select('.plot');
@@ -1011,8 +1032,8 @@ define('barchart/barchart',[
             padding: function () {
                 return { top: 15, right: 20, left: 40, bottom: 25 };
             },
-            xAxisOptions: function (axis) { },
-            yAxisOptions: function (axis) { },
+            xAxisOptions: function (axis) { return axis; },
+            yAxisOptions: function (axis) { return axis; },
             xAxisSvgOptions: function (axis) { },
             yAxisSvgOptions: function (axis) { }
         }
