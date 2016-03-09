@@ -863,6 +863,10 @@ define('barchart/barchart',[
             //namespace resize call: http://stackoverflow.com/questions/26409078/how-to-have-multiple-d3-window-resize-events
             d3.select(window).on('resize.' + Math.random().toString(36).substring(7), _.throttle(resize, 100));
 
+            if(options.afterRender && _.isFunction(options.afterRender)) {
+                options.afterRender(element);
+            }
+
             function resize() {
                 var bindingContext = ko.utils.unwrapObservable(valueAccessor());
                 var elementRect = element.getBoundingClientRect();
@@ -932,6 +936,10 @@ define('barchart/barchart',[
                     .call(yAxis);
 
                 options.yAxisSvgOptions(yAxisSvg);
+
+                if(options.afterRender && _.isFunction(options.afterRender)) {
+                    options.afterRender(element);
+                }
             }
 
         },
@@ -1021,6 +1029,10 @@ define('barchart/barchart',[
 
             options.yAxisSvgOptions(yAxisSvg);
 
+            if(options.afterRender && _.isFunction(options.afterRender)) {
+                options.afterRender(element);
+            }
+
         },
         options: {
             x: function (d) {
@@ -1035,7 +1047,8 @@ define('barchart/barchart',[
             xAxisOptions: function (axis) { return axis; },
             yAxisOptions: function (axis) { return axis; },
             xAxisSvgOptions: function (axis) { },
-            yAxisSvgOptions: function (axis) { }
+            yAxisSvgOptions: function (axis) { },
+            afterRender: function () {}
         }
     };
 });
