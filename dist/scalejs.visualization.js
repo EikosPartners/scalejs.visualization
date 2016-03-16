@@ -776,6 +776,17 @@ define('barchart/barchart',[
 ) {
     'use strict';
 
+    function heightWeightGenerator(y, options) {
+        return function (d) {
+            var width = y.rangeBand();
+            if(options.weight && _.isFunction(options.weight)) {
+                return width * options.weight(d);
+            } else {
+                return width;
+            }
+        };
+    }
+
     ko.bindingHandlers.barchart = {
         init: function (element, valueAccessor, allBindings) {
             var options = {};
@@ -831,14 +842,20 @@ define('barchart/barchart',[
 
             var plot = svg.append('g').attr('class', 'plot');
 
+            var heightWeight = heightWeightGenerator(y, options);
             var rect = plot.selectAll('.bar')
                 .data(data)
                 .enter().append('rect')
                 .attr('class', function(d) { return 'bar bar-' + (options.y(d) < 0 ? 'negative' : 'positive'); })
                 .attr('x', function(d) { return x(Math.min(0, options.y(d))); })
-                .attr('y', function(d) { return y(options.x(d)); })
+                .attr('y', function(d) {
+                    var startY = y(options.x(d));
+                    var averageHeight = y.rangeBand();
+                    var calculatedHeight = heightWeight(d);
+                    return startY + Math.abs(calculatedHeight - averageHeight) / 2;
+                })
                 .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
-                .attr('height', y.rangeBand());
+                .attr('height', heightWeight);
 
             var xAxisSvg = svg.append('g')
                 .attr('class', 'x axis')
@@ -916,12 +933,18 @@ define('barchart/barchart',[
 
                 var plot = svg.select('g.plot');
 
+                var heightWeight = heightWeightGenerator(y, options);
                 var rect = plot.selectAll('.bar').data(data).transition().duration(1000)
                     .attr('class', function(d) { return 'bar bar-' + (options.y(d) < 0 ? 'negative' : 'positive'); })
                     .attr('x', function(d) { return x(Math.min(0, options.y(d))); })
-                    .attr('y', function(d) { return y(options.x(d)); })
+                    .attr('y', function(d) {
+                        var startY = y(options.x(d));
+                        var averageHeight = y.rangeBand();
+                        var calculatedHeight = heightWeight(d);
+                        return startY + Math.abs(calculatedHeight - averageHeight) / 2;
+                    })
                     .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
-                    .attr('height', y.rangeBand());
+                    .attr('height', heightWeight);
 
                 var xAxisSvg = svg.select('g.x.axis')
                     .transition().duration(1000)
@@ -990,12 +1013,19 @@ define('barchart/barchart',[
             y.domain(data.map(options.x));  //x is the label
 
             var plot = svg.select('.plot');
+
+            var heightWeight = heightWeightGenerator(y, options);
             plot.selectAll('.bar').data(data).transition().duration(1000)
                 .attr('class', function(d) { return 'bar bar-' + (options.y(d) < 0 ? 'negative' : 'positive'); })
                 .attr('x', function(d) { return x(Math.min(0, options.y(d))); })
-                .attr('y', function(d) { return y(options.x(d)); })
+                .attr('y', function(d) {
+                    var startY = y(options.x(d));
+                    var averageHeight = y.rangeBand();
+                    var calculatedHeight = heightWeight(d);
+                    return startY + Math.abs(calculatedHeight - averageHeight) / 2;
+                })
                 .attr('width', function(d) { return Math.abs(x(options.y(d)) - x(0)); })
-                .attr('height', y.rangeBand());
+                .attr('height', heightWeight);
 
             plot.selectAll('.bar')
                 .data(data)
@@ -1040,6 +1070,9 @@ define('barchart/barchart',[
             },
             y: function (d) {
                 return d.y;
+            },
+            weight: function (d) {
+                return 1;
             },
             padding: function () {
                 return { top: 15, right: 20, left: 40, bottom: 25 };
